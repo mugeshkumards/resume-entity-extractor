@@ -1,0 +1,11 @@
+streamlit
+spacy
+transformers
+torch
+PyPDF2
+python-docx
+pandas
+plotly
+nltk
+python-dateutil
+regex
