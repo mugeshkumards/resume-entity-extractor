@@ -51,6 +51,23 @@ A workflow is included at `.github/workflows/docker.yml` to build the image on e
 
 Then push to `main` and the workflow will build and push the image.
 
+## Deploy to Streamlit Cloud
+
+1. Push your code to GitHub (see "Publish to GitHub" above)
+2. Go to [Streamlit Cloud](https://streamlit.io/cloud)
+3. Click "New app"
+4. Select your repository and branch
+5. Set the main file path to `app.py`
+6. Click "Deploy"
+
+The app will automatically:
+- Install dependencies from `requirements.txt`
+- Download spaCy model (`en_core_web_sm`) on first run
+- Download NLTK data on first run
+
+**Note:** First deployment may take a few minutes while models download.
+
 ## Notes
-- First run may download NLTK resources at runtime.
-- The Docker image downloads `en_core_web_sm` during build.
+- First run may download NLTK resources and spaCy model at runtime (handled automatically)
+- The Docker image downloads `en_core_web_sm` during build
+- Removed `transformers` and `torch` dependencies (not used in the code) to reduce deployment size

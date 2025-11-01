@@ -81,12 +81,20 @@ with st.sidebar:
 st.markdown('<h1 class="main-header">🤖 AI-Powered Resume Entity Extractor</h1>', 
             unsafe_allow_html=True)
 
-# Initialize parser
+# Initialize parser with error handling
 @st.cache_resource
 def load_parser():
-    return ResumeParser()
+    try:
+        return ResumeParser()
+    except Exception as e:
+        st.error(f"Error initializing parser: {str(e)}")
+        st.info("Please check the logs or try refreshing the page.")
+        return None
 
 parser = load_parser()
+
+if parser is None:
+    st.stop()
 
 # Input handling
 resume_text = ""
@@ -161,10 +169,17 @@ Certifications:
 # Extract button
 if st.button("🚀 Extract Entities", use_container_width=True):
     if resume_text:
-        with st.spinner("🔍 Analyzing resume..."):
-            extracted_data = parser.extract_entities(resume_text)
-            st.session_state.extracted_data = extracted_data
-            st.success("✅ Extraction completed!")
+        if parser is None:
+            st.error("❌ Parser not initialized. Please refresh the page.")
+        else:
+            try:
+                with st.spinner("🔍 Analyzing resume..."):
+                    extracted_data = parser.extract_entities(resume_text)
+                    st.session_state.extracted_data = extracted_data
+                    st.success("✅ Extraction completed!")
+            except Exception as e:
+                st.error(f"❌ Error during extraction: {str(e)}")
+                st.info("Please try again or check your input.")
     else:
         st.warning("⚠️ Please provide resume text first.")
 

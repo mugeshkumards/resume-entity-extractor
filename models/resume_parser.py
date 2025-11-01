@@ -1,6 +1,7 @@
 import spacy
 import re
-from transformers import pipeline
+import subprocess
+import sys
 import nltk
 from datetime import datetime
 from collections import defaultdict
@@ -8,18 +9,39 @@ from collections import defaultdict
 class ResumeParser:
     def __init__(self):
         """Initialize NER models and patterns"""
+        # Download and load spaCy model
         try:
             self.nlp = spacy.load("en_core_web_sm")
-        except:
-            import os
-            os.system("python -m spacy download en_core_web_sm")
-            self.nlp = spacy.load("en_core_web_sm")
+        except (OSError, IOError):
+            # Model not found, download it
+            try:
+                # Use spacy's CLI module for downloading (works on Streamlit Cloud)
+                import spacy.cli
+                spacy.cli.download("en_core_web_sm", quiet=True)
+                self.nlp = spacy.load("en_core_web_sm")
+            except Exception:
+                # Fallback to subprocess method
+                try:
+                    subprocess.check_call([
+                        sys.executable, "-m", "spacy", "download", "en_core_web_sm"
+                    ], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                    self.nlp = spacy.load("en_core_web_sm")
+                except Exception:
+                    # If all else fails, raise the error
+                    raise RuntimeError(
+                        "Failed to download spaCy model 'en_core_web_sm'. "
+                        "Please ensure you have internet connection and try again."
+                    )
         
         # Download NLTK data
         try:
             nltk.data.find('tokenizers/punkt')
         except LookupError:
-            nltk.download('punkt')
+            try:
+                nltk.download('punkt', quiet=True)
+            except Exception:
+                # Continue even if download fails
+                pass
         
         # Regex patterns
         self.email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
